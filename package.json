@@ -1,0 +1,30 @@
+{
+  "name": "strong-control-channel",
+  "version": "0.0.0",
+  "description": "run-time control channel for node applications",
+  "license": {
+    "name": "Dual MIT/StrongLoop",
+    "url": "https://github.com/strongloop/strong-control-channel/blob/master/LICENSE"
+  },
+  "keywords": [
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "tap test/test-*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/strongloop/strong-control-channel.git"
+  },
+  "author": {
+    "name": "Sam Roberts",
+    "email": "sam@strongloop.com"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "engines": {
+    "node": "*"
+  }
+}
