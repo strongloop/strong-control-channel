@@ -9,6 +9,7 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
+    "coverage": "istanbul cover test/cover.js",
     "test": "tap test/test-*.js"
   },
   "repository": {
