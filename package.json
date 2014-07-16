@@ -6,8 +6,7 @@
     "name": "Dual MIT/StrongLoop",
     "url": "https://github.com/strongloop/strong-control-channel/blob/master/LICENSE"
   },
-  "keywords": [
-  ],
+  "keywords": [],
   "main": "index.js",
   "scripts": {
     "test": "tap test/test-*.js"
@@ -21,8 +20,11 @@
     "email": "sam@strongloop.com"
   },
   "dependencies": {
+    "debug": "^1.0.3",
+    "newline-json": "^0.1.1"
   },
   "devDependencies": {
+    "tap": "git://github.com/strongloop/node-tap#production"
   },
   "engines": {
     "node": "*"
