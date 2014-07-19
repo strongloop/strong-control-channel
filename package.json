@@ -21,10 +21,11 @@
     "email": "sam@strongloop.com"
   },
   "dependencies": {
-    "debug": "^1.0.3",
+    "debug": "^1.0.4",
     "newline-json": "^0.1.1"
   },
   "devDependencies": {
+    "async": "^0.9.0",
     "tap": "git://github.com/strongloop/node-tap#production"
   },
   "engines": {
