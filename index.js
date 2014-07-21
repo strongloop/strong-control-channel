@@ -1,2 +1,3 @@
-exports.server = require('server');
-exports.client = require('client');
+exports.client = require('./client');
+exports.cluster = require('./cluster');
+exports.server = require('./server');
