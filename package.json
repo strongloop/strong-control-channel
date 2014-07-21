@@ -1,6 +1,6 @@
 {
   "name": "strong-control-channel",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "run-time control channel for node applications",
   "license": {
     "name": "Dual MIT/StrongLoop",
