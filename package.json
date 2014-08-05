@@ -1,9 +1,9 @@
 {
   "name": "strong-control-channel",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "run-time control channel for node applications",
   "license": {
-    "name": "Dual MIT/StrongLoop",
+    "name": "Dual Artistic/StrongLoop",
     "url": "https://github.com/strongloop/strong-control-channel/blob/master/LICENSE"
   },
   "keywords": [],
