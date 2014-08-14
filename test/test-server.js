@@ -3,6 +3,7 @@ var debug = require('./debug');
 var fs = require('fs');
 var helper = require('./helper');
 var net = require('net');
+var path = require('path');
 var server = require('../server');
 var tap = require('tap');
 
@@ -87,4 +88,31 @@ tap.test('respond error', function(t) {
       ch.socket.write('line\n');
     });
   }
+});
+
+tap.test('pipe address', function(t) {
+  var addr = 'a-pipe';
+
+  helper.unlink(addr);
+  var first = server.create(nop).listen(addr);
+
+  first.on('listening', function() {
+    t.equal(path.basename(first.address().path), addr);
+    first.close(function() {
+      t.end();
+    });
+  });
+});
+
+tap.test('tcp address', function(t) {
+  var addr = 0;
+
+  var first = server.create(nop).listen(addr);
+
+  first.on('listening', function() {
+    t.assert(first.address().port > addr);
+    first.close(function() {
+      t.end();
+    });
+  });
 });
