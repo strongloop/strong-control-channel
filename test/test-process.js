@@ -65,8 +65,6 @@ function onRequest(request, callback) {
 var ok;
 
 process.on('exit', function(code) {
-  if (code === 0) {
-    assert(ok);
-    console.log('PASS');
-  }
+  assert(ok);
+  console.log('PASS');
 });
