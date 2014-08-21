@@ -1,3 +1,15 @@
+2014-08-21, Version 0.2.2
+=========================
+
+ * process: support parent/child request/response (Sam Roberts)
+
+ * cluster: refactor ipc protocol from cluster (Sam Roberts)
+
+ * server: add an unref() method (Sam Roberts)
+
+ * server: add an address() method for port or path (Sam Roberts)
+
+
 2014-08-05, Version 0.2.1
 =========================
 
