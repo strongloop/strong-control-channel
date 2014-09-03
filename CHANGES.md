@@ -1,3 +1,9 @@
+2014-09-02, Version 0.2.3
+=========================
+
+ * package: expand slightly on the README (Sam Roberts)
+
+
 2014-08-21, Version 0.2.2
 =========================
 
