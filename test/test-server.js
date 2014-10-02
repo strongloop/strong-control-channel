@@ -67,7 +67,7 @@ tap.test('respond error', function(t) {
   
   rpc.on('listening', function() {
     client = net.connect(addr)
-    client.write('{}\n');
+    client.write('{"cmd": "strong-control-channel:request"}\n');
   });
 
   function onRequest(request, callback, ch) {
@@ -115,4 +115,49 @@ tap.test('tcp address', function(t) {
       t.end();
     });
   });
+});
+
+tap.test('notify multiple clients', function (t) {
+  var addr = 'a-pipe';
+
+  helper.unlink(addr);
+  var srv = server.create(nop, nop).listen(addr);
+
+  var curNotificationCnt = 0;
+  srv.on('listening', function () {
+    var h = setInterval(function () {
+      curNotificationCnt += 1;
+      srv.notify({cntr: curNotificationCnt});
+    }, 500);
+    srv.on('close', function () {
+      clearInterval(h);
+      t.end();
+    });
+  });
+
+  function checkComplete() {
+    if (c1._notified && c2._notified) {
+      t.equal(c1._msg, c2._msg);
+      srv.close();
+    }
+  }
+
+  function onNotification1(data) {
+    t.equal(data.cntr, curNotificationCnt);
+    c1._notified = true;
+    c1._msg = data.cntr;
+    c1.close();
+    checkComplete();
+  }
+
+  function onNotification2(data) {
+    t.equal(data.cntr, curNotificationCnt);
+    c2._notified = true;
+    c2._msg = data.cntr;
+    c2.close();
+    checkComplete();
+  }
+
+  var c1 = new client.Client(addr, nop, onNotification1);
+  var c2 = new client.Client(addr, nop, onNotification2);
 });
