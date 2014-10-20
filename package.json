@@ -1,6 +1,6 @@
 {
   "name": "strong-control-channel",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "run-time control channel for node applications",
   "license": {
     "name": "Dual Artistic/StrongLoop",
