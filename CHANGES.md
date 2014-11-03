@@ -1,3 +1,19 @@
+2014-11-03, Version 1.1.0
+=========================
+
+ * package: increment minor to reflect API addition (Sam Roberts)
+
+ * process: fix debug message syntax error (Sam Roberts)
+
+ * process: support notification reception (Sam Roberts)
+
+ * process: add debug statement for notify() (Sam Roberts)
+
+ * process: make attach() arguments optional (Sam Roberts)
+
+ * process: add debug message when making request (Sam Roberts)
+
+
 2014-10-02, Version 1.0.0
 =========================
 
@@ -35,15 +51,22 @@
 
 
 2014-07-21, Version 0.2.0
+=========================
 
-* cluster: support request/response within a cluster (Sam Roberts)
+ * cluster: support request/response within a cluster (Sam Roberts)
 
 
 2014-07-17, Version 0.1.0
+=========================
 
-* Add test coverage script (Sam Roberts)
+ * Add test coverage script (Sam Roberts)
 
-* Control channel from strong-cluster-control (Sam Roberts)
+ * Control channel from strong-cluster-control (Sam Roberts)
 
-* Initial package (Sam Roberts)
+ * Initial package (Sam Roberts)
 
+
+2014-07-15, Version INITIAL
+===========================
+
+ * First release!
