@@ -64,6 +64,7 @@ tap.test('protocol error', function(t) {
   var addr = 'a-pipe';
   var timedOut = false;
   var warned = false;
+  var response = false;
   var rpc = server.create(t.fail).listen(addr);
 
   rpc.on('listening', connectBadClient);
@@ -77,12 +78,16 @@ tap.test('protocol error', function(t) {
       timedOut = true;
       client.end();
     });
+    client.on('data', function(res) {
+      response = res;
+    });
     client.on('close', rpc.close.bind(rpc));
   }
 
   function assertResults() {
     t.assert(!timedOut, 'client should be disconnected before timing out');
     t.assert(warned, 'server should get warning of protocol error');
+    t.assert(/error/.test(response), 'server responds with error message');
     t.end();
   }
 });
