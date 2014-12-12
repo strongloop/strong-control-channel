@@ -1,3 +1,9 @@
+2014-12-12, Version 1.1.1
+=========================
+
+ * package: use debug v2.x in all strongloop deps (Sam Roberts)
+
+
 2014-11-03, Version 1.1.0
 =========================
 
