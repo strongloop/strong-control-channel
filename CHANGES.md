@@ -1,4 +1,10 @@
-2015-01-13, Version 1.1.2
+2015-05-08, Version 1.2.0
+=========================
+
+ * Allow Client requests to provide a callback (Ryan Graham)
+
+
+2015-01-12, Version 1.1.2
 =========================
 
  * Fix bad CLA URL in CONTRIBUTING.md (Ryan Graham)
