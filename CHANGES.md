@@ -1,3 +1,9 @@
+2015-05-21, Version 1.2.1
+=========================
+
+ * Call response callbacks asynchronously (Ryan Graham)
+
+
 2015-05-08, Version 1.2.0
 =========================
 
