@@ -1,5 +1,4 @@
 var client = require('../client');
-var debug = require('./debug');
 var fs = require('fs');
 var helper = require('./helper');
 var net = require('net');
@@ -16,7 +15,7 @@ tap.test('pipe listen busy', function(t) {
 
   helper.unlink(addr);
   var first = server.create(nop).listen(addr);
-  
+
   first.on('listening', function() {
     var next = server.create(nop).listen(addr);
     next.on('error', function(er) {
@@ -33,7 +32,7 @@ tap.test('tcp listen busy', function(t) {
   var addr = 0;
 
   var first = server.create(nop).listen(addr);
-  
+
   first.on('listening', function() {
     var port = first.server.address().port;
     var next = server.create(nop).listen(port);
@@ -49,7 +48,7 @@ tap.test('tcp listen busy', function(t) {
 tap.test('receive error', function(t) {
   var addr = 'a-pipe';
   var rpc = server.create(t.fail).listen(addr);
-  
+
   rpc.on('listening', function() {
     net.connect(addr).end('}} garbage {{\n {helo:3}\n');
   });
@@ -64,9 +63,9 @@ tap.test('respond error', function(t) {
   var addr = 'a-pipe';
   var rpc = server.create(onRequest).listen(addr);
   var client;
-  
+
   rpc.on('listening', function() {
-    client = net.connect(addr)
+    client = net.connect(addr);
     client.write('{"cmd": "strong-control-channel:request"}\n');
   });
 

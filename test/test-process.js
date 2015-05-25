@@ -1,6 +1,5 @@
 var assert = require('assert');
 var async = require('async');
-var path = require('path');
 
 
 var IPC = {stdio: [0, 1, 2, 'ipc']};
@@ -64,7 +63,7 @@ function onRequest(request, callback) {
 
 var ok;
 
-process.on('exit', function(code) {
+process.on('exit', function() {
   assert(ok);
   console.log('PASS');
 });

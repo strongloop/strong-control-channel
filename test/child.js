@@ -3,7 +3,9 @@ var ch = require('../process').attach(onRequest);
 var net = require('net');
 
 // Test that we can detect disconnect, and exit on parent exit or disconnect.
+/* eslint-disable no-unused-vars */
 var keepAlive = net.createServer().listen(0);
+/* eslint-enable */
 
 process.on('disconnect', function() {
   console.log('Did our parent die, or does it just want us to go away?');

@@ -5,7 +5,7 @@ var server = require('../server');
 var tap = require('tap');
 
 // callback on listening
-function echoServer(addr,callback) {
+function echoServer(addr, callback) {
   var s = server.create(echo).listen(addr)
     .on('listening', callback);
 
@@ -75,7 +75,7 @@ tap.test('tcp nexist', function(t) {
 });
 
 // callback on listening
-function garbageServer(addr,callback) {
+function garbageServer(addr, callback) {
   var s = server.create(echo).listen(addr)
     .on('listening', callback);
 

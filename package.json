@@ -10,6 +10,8 @@
   "main": "index.js",
   "scripts": {
     "coverage": "istanbul cover test/cover.js",
+    "lint": "eslint . && jscs .",
+    "pretest": "eslint . && jscs .",
     "test": "tap test/test-*.js"
   },
   "repository": {
