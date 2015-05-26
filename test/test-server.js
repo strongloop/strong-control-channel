@@ -116,19 +116,19 @@ tap.test('tcp address', function(t) {
   });
 });
 
-tap.test('notify multiple clients', function (t) {
+tap.test('notify multiple clients', function(t) {
   var addr = 'a-pipe';
 
   helper.unlink(addr);
   var srv = server.create(nop, nop).listen(addr);
 
   var curNotificationCnt = 0;
-  srv.on('listening', function () {
-    var h = setInterval(function () {
+  srv.on('listening', function() {
+    var h = setInterval(function() {
       curNotificationCnt += 1;
       srv.notify({cntr: curNotificationCnt});
     }, 500);
-    srv.on('close', function () {
+    srv.on('close', function() {
       clearInterval(h);
       t.end();
     });
