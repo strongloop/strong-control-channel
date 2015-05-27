@@ -3,11 +3,13 @@ var express = require('express');
 var expressWs = require('express-ws');
 var extend = require('util')._extend;
 var http = require('http');
+var url = require('url');
 var WebsocketChannel = require('../ws-channel');
 var WebsocketRouter = require('../ws-router');
 
-var ctlUri = 'ws://127.0.0.1:9999/channel';
 var isParent = process.argv[2] !== 'child';
+var debug = require('debug')('strong-control-channel:test:' + (isParent ?
+  'parent' : 'child'));
 
 var gotRequest = 0;
 var gotResponse = 0;
@@ -31,33 +33,53 @@ if (isParent) {
 
   // Create http + express server.
   var app = express();
-  var server = http.createServer(app).listen(9999);
+  var server = http.createServer(app).listen(0);
   expressWs(app, server);
+
+  server.on('error', function(err) {
+    debug('err: %j', err);
+    assert.ifError(err);
+  });
 
   // Create a websocket handler.
   var router = new WebsocketRouter(app, 'channel');
-  channel = router.createChannel(onServerRequest, onServerNotification);
+  channel = router.createChannel(onServerRequest);
 
   function onServerRequest(message, callback) {
-    console.log('server got', message);
-    assert(message.cmd === 'serverRequest');
-    gotRequest++;
-    callback({cmd: 'serverResponse'});
-  }
+    debug('server got', message);
+    if (message.cmd === 'serverRequest') {
+      assert(message.cmd === 'serverRequest');
+      gotRequest++;
+      callback({cmd: 'serverResponse'});
+      return;
+    }
 
-  function onServerNotification(message) {
-    console.log('server got', message);
     assert(message.cmd === 'serverNotification');
     gotNotification++;
   }
 
-  var env = extend({MESH_TOKEN: channel.getToken()}, process.env_);
-  require('child_process').fork(process.argv[1],
-                                ['child'],
-                                {stdio: 'inherit', env: env});
+  server.once('listening', function() {
+    var uri = url.format({
+      protocol: 'ws',
+      slashes: true,
+      auth: channel.getToken(),
+      hostname: '127.0.0.1',
+      port: this.address().port,
+      pathname: 'channel',
+    });
+    debug('mesh uri: %s', uri);
+    var env = extend({MESH_URI: uri}, process.env);
+    require('child_process').fork(process.argv[1], ['child'], {
+      stdio: 'inherit',
+      env: env
+    }).on('exit', function(code, signal) {
+      debug('child exit: %s', signal || code);
+      assert.equal(code, 0);
+    });
+  });
 
   channel.request({cmd: 'clientRequest'}, function(message) {
-    console.log('server got', message);
+    debug('server got', message);
     assert(message.cmd === 'clientResponse');
     gotResponse++;
 
@@ -71,20 +93,19 @@ if (isParent) {
 
 } else {
   // Child
-  channel = WebsocketChannel.connect(onClientRequest,
-                                     onClientNotification,
-                                     ctlUri,
-                                     process.env.MESH_TOKEN);
+  debug('child connects to: %s', process.env.MESH_URI);
+  channel = WebsocketChannel.connect(onClientRequest, process.env.MESH_URI);
 
   function onClientRequest(message, callback) {
-    console.log('client got', message);
-    assert(message.cmd === 'clientRequest');
-    gotRequest++;
-    callback({cmd: 'clientResponse'});
-  }
+    debug('client got', message);
 
-  function onClientNotification(message) {
-    console.log('client got', message);
+    if (message.cmd === 'clientRequest') {
+      assert(message.cmd === 'clientRequest');
+      gotRequest++;
+      callback({cmd: 'clientResponse'});
+      return;
+    }
+
     assert(message.cmd === 'clientNotification');
     gotNotification++;
   }
@@ -92,7 +113,7 @@ if (isParent) {
   channel.notify({cmd: 'serverNotification'});
 
   channel.request({cmd: 'serverRequest'}, function(message) {
-    console.log('client got', message);
+    debug('client got', message);
     assert(message.cmd === 'serverResponse');
     gotResponse++;
   });
