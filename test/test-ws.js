@@ -1,5 +1,3 @@
-'use strict';
-
 var assert = require('assert');
 var express = require('express');
 var expressWs = require('express-ws');
