@@ -44,6 +44,7 @@ function Central(path, onRequest, onListening) {
 }
 
 Central.prototype.stop = function(callback) {
+  this.router.destroyChannel(this.channel);
   this.server.close(callback);
 };
 
