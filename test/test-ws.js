@@ -1,11 +1,7 @@
-var assert = require('assert');
-var express = require('express');
-var expressWs = require('express-ws');
-var extend = require('util')._extend;
-var http = require('http');
-var url = require('url');
+var Server = require('./mock-server');
 var WebsocketChannel = require('../ws-channel');
-var WebsocketRouter = require('../ws-router');
+var assert = require('assert');
+var extend = require('util')._extend;
 
 var isParent = process.argv[2] !== 'child';
 var debug = require('debug')('strong-control-channel:test:' + (isParent ?
@@ -31,19 +27,7 @@ var channel;
 if (isParent) {
   // Parent
 
-  // Create http + express server.
-  var app = express();
-  var server = http.createServer(app).listen(0);
-  expressWs(app, server);
-
-  server.on('error', function(err) {
-    debug('err: %j', err);
-    assert.ifError(err);
-  });
-
-  // Create a websocket handler.
-  var router = new WebsocketRouter(app, 'channel');
-  channel = router.createChannel(onServerRequest);
+  var server = new Server('channel', onServerRequest, onListening);
 
   function onServerRequest(message, callback) {
     debug('server got', message);
@@ -58,15 +42,8 @@ if (isParent) {
     gotNotification++;
   }
 
-  server.once('listening', function() {
-    var uri = url.format({
-      protocol: 'ws',
-      slashes: true,
-      auth: channel.getToken(),
-      hostname: '127.0.0.1',
-      port: this.address().port,
-      pathname: 'channel',
-    });
+  function onListening(uri) {
+    uri = uri + '/channel';
     debug('mesh uri: %s', uri);
     var env = extend({MESH_URI: uri}, process.env);
     require('child_process').fork(process.argv[1], ['child'], {
@@ -76,9 +53,9 @@ if (isParent) {
       debug('child exit: %s', signal || code);
       assert.equal(code, 0);
     });
-  });
+  }
 
-  channel.request({cmd: 'clientRequest'}, function(message) {
+  server.request({cmd: 'clientRequest'}, function(message) {
     debug('server got', message);
     assert(message.cmd === 'clientResponse');
     gotResponse++;
@@ -86,10 +63,10 @@ if (isParent) {
     // Not a particularly logical place to close the server, but it has to
     // happen after accepting an incoming connection, which we can be certain
     // has happened at this this point.
-    server.close();
+    server.stop();
   });
 
-  channel.notify({cmd: 'clientNotification'});
+  server.notify({cmd: 'clientNotification'});
 
 } else {
   // Child
