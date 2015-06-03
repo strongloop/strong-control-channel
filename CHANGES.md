@@ -1,4 +1,28 @@
-2015-05-21, Version 1.2.1
+2015-06-03, Version 1.3.0
+=========================
+
+ * websocket: support router.deleteChannel() (Sam Roberts)
+
+ * Fixes for token generation and socket disconnect (Krishna Raman)
+
+ * Add a test ws server (Sam Roberts)
+
+ * Api simplifications for central/executor (Sam Roberts)
+
+ * package: add eslint and jscs dependencies (Sam Roberts)
+
+ * cluster: fix regression caused during linting (Sam Roberts)
+
+ * ws: doc comments (Sam Roberts)
+
+ * ws: implement basic websocket-based control channel (Bert Belder)
+
+ * lint: fix style issues reported by jscs (Bert Belder)
+
+ * package: add eslint and jscs (Sam Roberts)
+
+
+2015-05-20, Version 1.2.1
 =========================
 
  * Call response callbacks asynchronously (Ryan Graham)
