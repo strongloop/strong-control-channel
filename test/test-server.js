@@ -6,22 +6,24 @@ var path = require('path');
 var server = require('../server');
 var tap = require('tap');
 
+var SERVER_ADDRESS = (process.platform !== 'win32')
+                     ? 'a-pipe'
+                     : '\\\\.\\pipe\\a-pipe';
+
 function nop() {
   // no-op
 }
 
 tap.test('pipe listen busy', function(t) {
-  var addr = 'a-pipe';
-
-  helper.unlink(addr);
-  var first = server.create(nop).listen(addr);
+  helper.unlink(SERVER_ADDRESS);
+  var first = server.create(nop).listen(SERVER_ADDRESS);
 
   first.on('listening', function() {
-    var next = server.create(nop).listen(addr);
+    var next = server.create(nop).listen(SERVER_ADDRESS);
     next.on('error', function(er) {
       t.assert(er.message, 'errored');
       first.close(function() {
-        t.assert(!fs.existsSync('a-pipe'), 'pipe closed');
+        t.assert(!fs.existsSync(SERVER_ADDRESS), 'pipe closed');
         t.end();
       });
     });
@@ -29,9 +31,7 @@ tap.test('pipe listen busy', function(t) {
 });
 
 tap.test('tcp listen busy', function(t) {
-  var addr = 0;
-
-  var first = server.create(nop).listen(addr);
+  var first = server.create(nop).listen(0);
 
   first.on('listening', function() {
     var port = first.server.address().port;
@@ -46,11 +46,10 @@ tap.test('tcp listen busy', function(t) {
 });
 
 tap.test('receive error', function(t) {
-  var addr = 'a-pipe';
-  var rpc = server.create(t.fail).listen(addr);
+  var rpc = server.create(t.fail).listen(SERVER_ADDRESS);
 
   rpc.on('listening', function() {
-    net.connect(addr).end('}} garbage {{\n {helo:3}\n');
+    net.connect(SERVER_ADDRESS).end('}} garbage {{\n {helo:3}\n');
   });
 
   rpc.on('warn', function(er) {
@@ -60,12 +59,11 @@ tap.test('receive error', function(t) {
 });
 
 tap.test('respond error', function(t) {
-  var addr = 'a-pipe';
-  var rpc = server.create(onRequest).listen(addr);
+  var rpc = server.create(onRequest).listen(SERVER_ADDRESS);
   var client;
 
   rpc.on('listening', function() {
-    client = net.connect(addr);
+    client = net.connect(SERVER_ADDRESS);
     client.write('{"cmd": "strong-control-channel:request"}\n');
   });
 
@@ -90,13 +88,11 @@ tap.test('respond error', function(t) {
 });
 
 tap.test('pipe address', function(t) {
-  var addr = 'a-pipe';
-
-  helper.unlink(addr);
-  var first = server.create(nop).listen(addr);
+  helper.unlink(SERVER_ADDRESS);
+  var first = server.create(nop).listen(SERVER_ADDRESS);
 
   first.on('listening', function() {
-    t.equal(path.basename(first.address().path), addr);
+    t.equal(path.basename(first.address().path), 'a-pipe');
     first.close(function() {
       t.end();
     });
@@ -104,12 +100,10 @@ tap.test('pipe address', function(t) {
 });
 
 tap.test('tcp address', function(t) {
-  var addr = 0;
-
-  var first = server.create(nop).listen(addr);
+  var first = server.create(nop).listen(0);
 
   first.on('listening', function() {
-    t.assert(first.address().port > addr);
+    t.assert(first.address().port !== 0);
     first.close(function() {
       t.end();
     });
@@ -117,10 +111,8 @@ tap.test('tcp address', function(t) {
 });
 
 tap.test('notify multiple clients', function(t) {
-  var addr = 'a-pipe';
-
-  helper.unlink(addr);
-  var srv = server.create(nop, nop).listen(addr);
+  helper.unlink(SERVER_ADDRESS);
+  var srv = server.create(nop, nop).listen(SERVER_ADDRESS);
 
   var curNotificationCnt = 0;
   srv.on('listening', function() {
@@ -157,6 +149,6 @@ tap.test('notify multiple clients', function(t) {
     checkComplete();
   }
 
-  var c1 = new client.Client(addr, nop, onNotification1);
-  var c2 = new client.Client(addr, nop, onNotification2);
+  var c1 = new client.Client(SERVER_ADDRESS, nop, onNotification1);
+  var c2 = new client.Client(SERVER_ADDRESS, nop, onNotification2);
 });
