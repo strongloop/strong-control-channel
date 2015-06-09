@@ -33,7 +33,7 @@
     "express": "^4.12.4",
     "express-ws": "^0.2.6",
     "jscs": "^1.13.1",
-    "tap": "git://github.com/strongloop/node-tap#production"
+    "tap": "^1.2.0"
   },
   "engines": {
     "node": "*"
