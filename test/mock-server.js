@@ -4,8 +4,6 @@ var WebsocketRouter = require('../ws-router');
 var assert = require('assert');
 var debug = require('../lib/debug')('test:central');
 var express = require('express');
-var expressWs = require('express-ws');
-var http = require('http');
 var url = require('url');
 
 
@@ -17,12 +15,10 @@ function Central(path, onRequest, onListening) {
   var self = this;
 
   self.app = express();
-  self.server = http.createServer(self.app).listen(0);
+  self.server = self.app.listen(0);
   self.path = path;
 
-  expressWs(self.app, self.server);
-
-  self.router = new WebsocketRouter(self.app, path);
+  self.router = new WebsocketRouter(self.server, self.app, path);
   self.channel = self.router.createChannel(_onRequest);
 
   self.server.on('listening', function() {
