@@ -27,6 +27,7 @@ function Central(path, onRequest, onListening) {
       auth: self.channel.getToken(),
       hostname: '127.0.0.1',
       port: this.address().port,
+      pathname: self.path,
     });
     debug('listening on %s', uri, self.channel.getToken());
     assert(url.parse(uri).auth);

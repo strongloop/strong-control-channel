@@ -43,7 +43,6 @@ if (isParent) {
   }
 
   function onListening(uri) {
-    uri = uri + '/channel';
     debug('mesh uri: %s', uri);
     var env = extend({MESH_URI: uri}, process.env);
     require('child_process').fork(process.argv[1], ['child'], {
