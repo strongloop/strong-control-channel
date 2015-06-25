@@ -21,7 +21,7 @@ var tests = [
 function test(target, request, error) {
   return function(done) {
     ch.request(request, function(response) {
-      console.log('dst %d req %j rsp %j should error? %s',
+      console.log('# dst %d req %j rsp %j should error? %s',
         child.pid, request, response, error);
 
       assert.equal(request.cmd, response.cmd);
@@ -44,7 +44,7 @@ async.parallel(tests, function(err) {
 });
 
 function onRequest(request, callback) {
-  console.log('master recv request %j', request);
+  console.log('# master recv request %j', request);
 
   request.pid = process.pid;
 
@@ -54,7 +54,7 @@ function onRequest(request, callback) {
     request.error = 'unsupported';
   }
 
-  console.log('master send response %j', request);
+  console.log('# master send response %j', request);
 
   return callback(request);
 }
@@ -65,5 +65,5 @@ var ok;
 
 process.on('exit', function() {
   assert(ok);
-  console.log('PASS');
+  console.log('ok # PASS\n1..1');
 });

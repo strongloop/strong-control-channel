@@ -38,7 +38,7 @@ var tests = [
 function test(worker, dst, request, error) {
   return function(done) {
     ch.request(dst, request, function(response) {
-      console.log('dst %d req %j rsp %j should error? %s',
+      console.log('# dst %d req %j rsp %j should error? %s',
         dst, request, response, error);
 
       assert.equal(request.cmd, response.cmd);
@@ -62,7 +62,7 @@ async.parallel(tests, function(err) {
 });
 
 function onRequest(request, callback) {
-  console.log('master recv request %j', request);
+  console.log('# master recv request %j', request);
 
   request.wid = 0;
   request.pid = process.pid;
@@ -73,7 +73,7 @@ function onRequest(request, callback) {
     request.error = 'unsupported';
   }
 
-  console.log('master send response %j', request);
+  console.log('# master send response %j', request);
 
   return callback(request);
 }
@@ -85,6 +85,6 @@ var ok;
 process.on('exit', function(code) {
   if (code === 0) {
     assert(ok);
-    console.log('PASS');
+    console.log('ok # PASS\n1..1');
   }
 });

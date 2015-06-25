@@ -13,3 +13,6 @@ helper.unlink(SERVER_ADDRESS);
 server.create(nop).listen(SERVER_ADDRESS).unref();
 
 // If server is unrefed, it should not keep node from exiting
+process.on('exit', function(code) {
+  console.log('%s\n1..1', code ? 'not ok' : 'ok');
+});

@@ -25,7 +25,7 @@ process.on('exit', function() {
 
   // Print only if we're the parent - not the child.
   if (isParent)
-    console.log('PASS');
+    console.log('ok # PASS\n1..1');
 });
 
 
