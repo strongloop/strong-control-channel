@@ -156,6 +156,7 @@ function onError(err) {
   // The tolerable errors are ECONNRESET and "write after end"
   // either which may happen after the client kills the websocket
   // when it reconnects.
-  assert(/write after end/i.test(err.message) ||
-         err.code === 'ECONNRESET');
+  assert.ifError(!/write after end/i.test(err.message) &&
+                 err.code !== 'ECONNRESET' &&
+                 err);
 }
