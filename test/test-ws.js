@@ -12,9 +12,10 @@ var gotResponse = 0;
 var gotNotification = 0;
 
 process.on('exit', function() {
-  assert(gotRequest === 1);
-  assert(gotResponse === 1);
-  assert(gotNotification === 1);
+  var which = isParent ? 'parent' : 'child';
+  assert.equal(gotRequest, 1, which);
+  assert.equal(gotResponse, 1, which);
+  assert.equal(gotNotification, 1, which);
 
   // Print only if we're the parent - not the child.
   if (isParent)
@@ -43,7 +44,7 @@ if (isParent) {
   }
 
   function onListening(uri) {
-    debug('mesh uri: %s', uri);
+    debug('listening on mesh uri: %s', uri);
     var env = extend({MESH_URI: uri}, process.env);
     require('child_process').fork(process.argv[1], ['child'], {
       stdio: 'inherit',
@@ -54,18 +55,20 @@ if (isParent) {
     });
   }
 
-  server.request({cmd: 'clientRequest'}, function(message) {
-    debug('server got', message);
-    assert(message.cmd === 'clientResponse');
-    gotResponse++;
+  server.client.on('new-channel', function(ch) {
+    debug('new-channel: %s', ch.getToken());
+    server.request({cmd: 'clientRequest'}, function(message) {
+      debug('server got', message);
+      assert(message.cmd === 'clientResponse');
+      gotResponse++;
 
-    // Not a particularly logical place to close the server, but it has to
-    // happen after accepting an incoming connection, which we can be certain
-    // has happened at this this point.
-    server.stop();
+      // Not a particularly logical place to close the server, but it has to
+      // happen after accepting an incoming connection, which we can be certain
+      // has happened at this this point.
+      server.stop();
+    });
+    server.notify({cmd: 'clientNotification'});
   });
-
-  server.notify({cmd: 'clientNotification'});
 
 } else {
   // Child
