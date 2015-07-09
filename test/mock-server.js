@@ -19,17 +19,23 @@ function Central(path, onRequest, onListening) {
   self.path = path;
 
   self.router = new WebsocketRouter(self.server, self.app, path);
-  self.channel = self.router.createChannel(_onRequest);
+  self.client = self.router.acceptClient(_onRequest, 'CLIENT-ID');
+  assert.equal(self.client.getToken(), 'CLIENT-ID');
+  self.client.on('new-channel', function(channel) {
+    debug('new-channel: %s', channel.getToken());
+    assert(!self.channel);
+    self.channel = channel;
+  });
 
   self.server.on('listening', function() {
     var uri = this.uri = url.format({
       protocol: 'http',
-      auth: self.channel.getToken(),
+      auth: self.client.getToken(),
       hostname: '127.0.0.1',
       port: this.address().port,
       pathname: self.path,
     });
-    debug('listening on %s', uri, self.channel.getToken());
+    debug('listening on %s', uri, self.client.getToken());
     assert(url.parse(uri).auth);
     onListening(uri);
   });
@@ -41,7 +47,7 @@ function Central(path, onRequest, onListening) {
 }
 
 Central.prototype.stop = function(callback) {
-  this.router.destroyChannel(this.channel);
+  this.router.destroyClient(this.client);
   this.server.close(callback);
 };
 

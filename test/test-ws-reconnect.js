@@ -7,8 +7,9 @@ var isParent = process.argv[2] !== 'child';
 var debug = require('debug')('strong-control-channel:test:' +
                             (isParent ? 'parent' : 'child'));
 
-var NUM_REQUESTS = 500;
-var RECONNECT_INTERVAL = 10;
+var NUM_REQUESTS = 10;
+var RECONNECT_INTERVAL = 2;
+var REQ_INTERVAL = 500;
 
 var clientRequestCounter = 0;
 var clientResponseCounter = 0;
@@ -17,7 +18,11 @@ var serverResponseCounter = 0;
 
 var channel;
 
-process.on('exit', function() {
+process.on('exit', function(code) {
+  debug('process exit: code %d', code);
+
+  if (code !== 0)
+    return;
   assert(clientRequestCounter === NUM_REQUESTS);
   assert(clientResponseCounter === NUM_REQUESTS);
   assert(serverRequestCounter === NUM_REQUESTS);
@@ -32,7 +37,10 @@ process.on('exit', function() {
 if (isParent) {
   // Parent and server.
   var server = new Server('channel', onClientRequest, onListening);
-  channel = server.channel;
+  server.client.on('new-channel', function(ch) {
+    channel = ch;
+    sendServerRequest();
+  });
 
   function onListening(uri) {
     debug('mesh uri: %s', uri);
@@ -70,7 +78,7 @@ if (isParent) {
     channel.request(request, onClientResponse);
 
     if (serverRequestCounter < NUM_REQUESTS)
-      setTimeout(sendServerRequest, 5);
+      setTimeout(sendServerRequest, REQ_INTERVAL);
   }
 
   function onClientResponse(message) {
@@ -89,17 +97,18 @@ if (isParent) {
       server.stop();
   }
 
-  channel.on('error', onError);
-  sendServerRequest();
+  // TODO(sam) figure out what this is for, errors aren't emitted anymore,
+  // and I'm not sure what is being asserted.
+  //   channel.on('error', onError);
 
 } else {
-  // Child and client.
-  channel = new WebsocketChannel(onServerRequest);
+  process.on('disconnect', function() {
+    console.error('parent died!');
+    process.exit(9);
+  });
 
-  function connect() {
-    debug('child (re)connecting to: %s', process.env.MESH_URI);
-    channel.connect(process.env.MESH_URI);
-  }
+  // Child and client.
+  channel = WebsocketChannel.connect(onServerRequest, process.env.MESH_URI);
 
   function onServerRequest(message, callback) {
     assert(message.cmd === 'serverRequest');
@@ -118,8 +127,8 @@ if (isParent) {
   }
 
   function sendClientRequest() {
-    if (clientRequestCounter % RECONNECT_INTERVAL === 0)
-      connect();
+    if (clientRequestCounter && clientRequestCounter % RECONNECT_INTERVAL === 0)
+      disconnectWs();
 
     var request = {
       cmd: 'clientRequest',
@@ -128,7 +137,7 @@ if (isParent) {
     channel.request(request, onServerResponse);
 
     if (clientRequestCounter < NUM_REQUESTS)
-      setTimeout(sendClientRequest, 5);
+      setTimeout(sendClientRequest, REQ_INTERVAL);
   }
 
   function onServerResponse(message) {
@@ -142,15 +151,44 @@ if (isParent) {
   }
 
   function maybeCloseClient() {
+    debug('maybe close: want %d client? %d server? %d',
+          NUM_REQUESTS, clientResponseCounter, serverResponseCounter);
     if (clientResponseCounter === NUM_REQUESTS &&
-        serverResponseCounter === NUM_REQUESTS)
-      channel.close();
+        serverResponseCounter === NUM_REQUESTS) {
+      channel.close(function() {
+        // FIXME(sam) should not be necessary, but there are active handles,
+        // fix later.
+        process.exit(0);
+      });
+      setTimeout(function() {
+        var handles = process._getActiveHandles();
+        console.error('handles %j requests %j',
+                    Object.keys(process._getActiveHandles()),
+                    Object.keys(process._getActiveRequests()));
+        console.error(typeof handles[0], handles[0]);
+        console.error(typeof handles[1], handles[1]);
+        console.error(typeof handles[2], handles[2]);
+        assert(false, 'child should exit on channel close');
+      }, 1000).unref();
+    }
   }
 
-  channel.on('error', onError);
-  connect();
+  function disconnectWs() {
+    if (channel._websocket) {
+      debug('simulate error on underlying ws');
+      channel._websocket.emit('error', new Error('simulated ws error'));
+    } else {
+      debug('skip simulated error, ws is missing');
+    }
+  }
+
+  // TODO(sam) channel.on('error', onError);
   sendClientRequest();
 }
+
+/*
+// FIXME bert - _handleError in WebsocketChannel reconnects for ALL errors, not
+// just these two, is that intended? what is the meaning of this check?
 
 function onError(err) {
   // The tolerable errors are ECONNRESET and "write after end"
@@ -160,3 +198,4 @@ function onError(err) {
                  err.code !== 'ECONNRESET' &&
                  err);
 }
+*/

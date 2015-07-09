@@ -12,34 +12,29 @@ var clients = [];
 
 tap.test('create server', function(t) {
   server = new Server('test-control', echo('server'), onListening);
-  server.channel.on('connection', addClient);
+  server.client.on('new-channel', onChannel);
+
   function onListening(url) {
     wsURL = url;
     t.assert(wsURL, 'server is listening at ' + wsURL);
     t.end();
   }
-  function addClient(ws) {
-    t.comment('new WS client:', ws._socket.remotePort);
-    clients.push(ws);
+
+  function onChannel(channel) {
+    channel.on('connection', function(ws) {
+      t.comment('new WS client:', ws._socket.remotePort, channel.getToken());
+      clients.push(ws);
+    });
   }
 });
 
 tap.test('create client', function(t) {
-  client = new WebsocketChannel(echo('client'));
-  t.assert(client, 'client channel should exist');
-  client.on('error', connect);
+  client = WebsocketChannel.connect(echo('client'), wsURL);
+
   client.once('connect', function(ws) {
     t.assert(ws, 'client should connect');
     t.end();
   });
-  connect();
-
-  function connect(err) {
-    if (err) {
-      t.comment('reconnecting due to error: ', err);
-    }
-    client.connect(wsURL);
-  }
 });
 
 tap.test('sabotage first websocket', function(t) {
@@ -128,17 +123,16 @@ function echo(name) {
 
 function sabotage(t, count, client, clients) {
   var latestClient = clients[count - 1];
-  t.plan(5);
+  t.plan(4);
   t.equal(clients.length, count, 'should be latest client');
-  client.once('error', function(err) {
-    t.ok(err, 'client side gets an error event');
-  });
+
   server.channel.once('connection', function(ws) {
     t.ok(ws, 'server side gets a new client');
   });
   client.once('connect', function(ws) {
     t.ok(ws, 'client should reconnect');
   });
+
   lightOnFire(t, latestClient);
 }
 
