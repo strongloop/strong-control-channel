@@ -7,9 +7,11 @@ var isParent = process.argv[2] !== 'child';
 var debug = require('debug')('strong-control-channel:test:' +
                             (isParent ? 'parent' : 'child'));
 
-var NUM_REQUESTS = 10;
-var RECONNECT_INTERVAL = 2;
-var REQ_INTERVAL = 500;
+// TBD we are currently only sending bad packets from client to server,
+// we should occaisionally do the opposite.
+var NUM_REQUESTS = 50;
+var RECONNECT_INTERVAL = 9;
+var REQ_INTERVAL = 50; // FIXME reducing this to 5ms triggers a bug
 
 var clientRequestCounter = 0;
 var clientResponseCounter = 0;
@@ -39,6 +41,9 @@ if (isParent) {
   var server = new Server('channel', onClientRequest, onListening);
   server.client.on('new-channel', function(ch) {
     channel = ch;
+    channel.on('error', function(err) {
+      assert.equal(err.message, 'disconnect');
+    });
     sendServerRequest();
   });
 
@@ -107,8 +112,15 @@ if (isParent) {
     process.exit(9);
   });
 
+  // Listening on the IPC channel implicitly causes it to be refed.
+  process._channel.unref();
+
   // Child and client.
   channel = WebsocketChannel.connect(onServerRequest, process.env.MESH_URI);
+
+  channel.on('error', function(err) {
+    assert.equal(err.message, 'disconnect');
+  });
 
   function onServerRequest(message, callback) {
     assert(message.cmd === 'serverRequest');
@@ -128,7 +140,7 @@ if (isParent) {
 
   function sendClientRequest() {
     if (clientRequestCounter && clientRequestCounter % RECONNECT_INTERVAL === 0)
-      disconnectWs();
+      disconnectWs(channel);
 
     var request = {
       cmd: 'clientRequest',
@@ -156,46 +168,22 @@ if (isParent) {
     if (clientResponseCounter === NUM_REQUESTS &&
         serverResponseCounter === NUM_REQUESTS) {
       channel.close(function() {
-        // FIXME(sam) should not be necessary, but there are active handles,
-        // fix later.
-        process.exit(0);
+        debug('channel closed');
+        setTimeout(function() {
+          assert(false, 'child should exit on channel close');
+        }, 1000).unref();
       });
-      setTimeout(function() {
-        var handles = process._getActiveHandles();
-        console.error('handles %j requests %j',
-                    Object.keys(process._getActiveHandles()),
-                    Object.keys(process._getActiveRequests()));
-        console.error(typeof handles[0], handles[0]);
-        console.error(typeof handles[1], handles[1]);
-        console.error(typeof handles[2], handles[2]);
-        assert(false, 'child should exit on channel close');
-      }, 1000).unref();
     }
   }
 
-  function disconnectWs() {
-    if (channel._websocket) {
-      debug('simulate error on underlying ws');
-      channel._websocket.emit('error', new Error('simulated ws error'));
-    } else {
-      debug('skip simulated error, ws is missing');
-    }
-  }
-
-  // TODO(sam) channel.on('error', onError);
   sendClientRequest();
 }
 
-/*
-// FIXME bert - _handleError in WebsocketChannel reconnects for ALL errors, not
-// just these two, is that intended? what is the meaning of this check?
-
-function onError(err) {
-  // The tolerable errors are ECONNRESET and "write after end"
-  // either which may happen after the client kills the websocket
-  // when it reconnects.
-  assert.ifError(!/write after end/i.test(err.message) &&
-                 err.code !== 'ECONNRESET' &&
-                 err);
+function disconnectWs() {
+  if (channel._websocket && channel._websocket._socket) {
+    debug('cause protocol error on underlying ws');
+    channel._websocket._socket.end(new Buffer([0, 0, 0, 0]));
+  } else {
+    debug('skip simulated error, ws is missing');
+  }
 }
-*/

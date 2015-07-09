@@ -19,8 +19,8 @@ function Central(path, onRequest, onListening) {
   self.path = path;
 
   self.router = new WebsocketRouter(self.server, self.app, path);
-  self.client = self.router.acceptClient(_onRequest, 'CLIENT-ID');
-  assert.equal(self.client.getToken(), 'CLIENT-ID');
+  self.client = self.router.acceptClient(_onRequest, 'CID');
+  assert.equal(self.client.getToken(), 'CID');
   self.client.on('new-channel', function(channel) {
     debug('new-channel: %s', channel.getToken());
     assert(!self.channel);
@@ -47,7 +47,7 @@ function Central(path, onRequest, onListening) {
 }
 
 Central.prototype.stop = function(callback) {
-  this.router.destroyClient(this.client);
+  this.router.close();
   this.server.close(callback);
 };
 
