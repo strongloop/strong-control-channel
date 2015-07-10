@@ -75,6 +75,10 @@ if (isParent) {
   debug('child connects to: %s', process.env.MESH_URI);
   channel = WebsocketChannel.connect(onClientRequest, process.env.MESH_URI);
 
+  channel.on('error', function(err) {
+    assert.equal(err.message, 'disconnect');
+  });
+
   function onClientRequest(message, callback) {
     debug('client got', message);
 
