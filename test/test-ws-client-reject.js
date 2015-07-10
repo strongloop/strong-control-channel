@@ -2,7 +2,6 @@ var Server = require('./mock-server');
 var Channel = require('../ws-channel');
 var assert = require('assert');
 var debug = require('debug')('strong-control-channel:test');
-var extend = require('util')._extend;
 var tap = require('tap');
 
 tap.test('server reject', function(t) {
@@ -26,7 +25,7 @@ tap.test('server reject', function(t) {
   function onListening(uri) {
     debug('mesh uri: %s', uri);
 
-    connect()
+    connect();
 
     function connect() {
       var channel = Channel.connect(function() {}, uri);
@@ -41,7 +40,7 @@ tap.test('server reject', function(t) {
         assert.equal(err.message, 'reject-client');
         debug('client %d: %s closes=%d', num, closes);
 
-        if (closes == channels.length)
+        if (closes === channels.length)
           t.assert(true, 'clients closed');
       });
     }

@@ -2,25 +2,17 @@ var Server = require('./mock-server');
 var Channel = require('../ws-channel');
 var assert = require('assert');
 var debug = require('debug')('strong-control-channel:test');
-var extend = require('util')._extend;
 var tap = require('tap');
 
 tap.test('server reject', function(t) {
   // Parent and server.
   var server = new Server('channel', onRequest, onListening);
-  var channel;
-  var alives = 0;
-  var closes = 0;
 
   t.plan(1);
 
   t.on('end', function() {
     debug('stop server');
     server.stop();
-  });
-
-  server.client.on('new-channel', function(ch) {
-    channel = ch;
   });
 
   function onListening(uri) {
@@ -38,13 +30,12 @@ tap.test('server reject', function(t) {
     });
   }
 
-  function onRequest(message, callback) {
+  function onRequest(message) {
     debug('server recv: %j', message);
     assert.equal(message.cmd, 'alive');
 
-    callback({});
-
     debug('destroying channel');
+
     // Simulate server restart... destroy the client and its channels, then
     // reaccept the client token, but since the channel will no longer be known,
     // the channel will be rejected even though the client is known.

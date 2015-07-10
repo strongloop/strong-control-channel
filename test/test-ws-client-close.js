@@ -2,7 +2,6 @@ var Server = require('./mock-server');
 var Channel = require('../ws-channel');
 var assert = require('assert');
 var debug = require('debug')('strong-control-channel:test');
-var extend = require('util')._extend;
 var tap = require('tap');
 
 tap.test('server close', function(t) {
@@ -26,7 +25,8 @@ tap.test('server close', function(t) {
   function onListening(uri) {
     debug('mesh uri: %s', uri);
 
-    connect()
+    connect();
+
     // TODO(sam) mock server doesn't allow multiple clients... so while this
     // test is written to support them it asserts in there. Maybe we don't need
     // multiple clients, its not typical.
@@ -46,7 +46,7 @@ tap.test('server close', function(t) {
         assert.equal(err.message, 'disconnect');
         debug('client %d: disconnected closes=%d', num, closes);
 
-        if (closes == channels.length)
+        if (closes === channels.length)
           t.assert(true, 'clients closed');
       });
     }
