@@ -121,7 +121,8 @@ function lightOnFire() {
   if (socket._socket) {
     socket._socket.end(NULL_WS_PKT);
   }
-  // FIXME Commenting this out causes ws internal exceptions:
+  // XXX(sam) Commenting this out triggers
+  //   https://github.com/websockets/ws/issues/366
   socket.terminate();
 
   return socket;
