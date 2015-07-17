@@ -182,8 +182,12 @@ if (isParent) {
 function disconnectWs() {
   if (channel._websocket && channel._websocket._socket) {
     debug('cause protocol error on underlying ws');
-    channel._websocket._socket.end(new Buffer([0, 0, 0, 0]));
+    // XXX(sam) ws isn't robust to protocol errors, this causes random occurence
+    // of the following bug when a bad buffer is sent:
+    //   https://github.com/websockets/ws/issues/366
+    //channel._websocket._socket.end(new Buffer([0, 0, 0, 0]));
+    channel._websocket.close();
   } else {
-    debug('skip simulated error, ws is missing');
+    debug('skip simulated protocol error, ws is missing');
   }
 }
