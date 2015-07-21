@@ -37,9 +37,8 @@ tap.test('server close', function(t) {
       var channel = Channel.connect(function() {}, uri);
       var num = channels.length + 1;
 
-      channel.request({cmd: 'alive'}, function(rsp) {
-        debug('client %d: rsp %j', num, rsp);
-      });
+      // Note: no callback, as a regression test.
+      channel.request({cmd: 'alive'});
 
       channel.on('error', function(err) {
         closes++;

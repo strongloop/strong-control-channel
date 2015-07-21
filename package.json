@@ -9,10 +9,8 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
-    "coverage": "istanbul cover test/cover.js",
-    "lint": "eslint . && jscs .",
-    "pretest": "eslint . && jscs .",
-    "test": "tap test/test-*.js"
+    "pretest": "eslint --ignore-path .gitignore . && jscs .",
+    "test": "tap --bail test/test-*.js"
   },
   "repository": {
     "type": "git",

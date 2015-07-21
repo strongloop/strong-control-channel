@@ -7,11 +7,10 @@ var isParent = process.argv[2] !== 'child';
 var debug = require('debug')('strong-control-channel:test:' +
                             (isParent ? 'parent' : 'child'));
 
-// TBD we are currently only sending bad packets from client to server,
-// we should occaisionally do the opposite.
-var NUM_REQUESTS = 50;
-var RECONNECT_INTERVAL = 9;
-var REQ_INTERVAL = 50; // FIXME reducing this to 5ms triggers a bug
+var NUM_REQUESTS = 20;
+var SERVER_ABORT = 3;
+var CLIENT_ABORT = 5;
+var REQ_INTERVAL = 100;
 
 var clientRequestCounter = 0;
 var clientResponseCounter = 0;
@@ -82,8 +81,11 @@ if (isParent) {
     };
     channel.request(request, onClientResponse);
 
-    if (serverRequestCounter < NUM_REQUESTS)
+    if (serverRequestCounter < NUM_REQUESTS) {
+      if (serverRequestCounter && ((serverRequestCounter % SERVER_ABORT) === 0))
+        disconnectWs(channel);
       setTimeout(sendServerRequest, REQ_INTERVAL);
+    }
   }
 
   function onClientResponse(message) {
@@ -139,7 +141,7 @@ if (isParent) {
   }
 
   function sendClientRequest() {
-    if (clientRequestCounter && clientRequestCounter % RECONNECT_INTERVAL === 0)
+    if (clientRequestCounter && ((clientRequestCounter % CLIENT_ABORT) === 0))
       disconnectWs(channel);
 
     var request = {
@@ -182,8 +184,12 @@ if (isParent) {
 function disconnectWs() {
   if (channel._websocket && channel._websocket._socket) {
     debug('cause protocol error on underlying ws');
-    channel._websocket._socket.end(new Buffer([0, 0, 0, 0]));
+    // XXX(sam) ws isn't robust to protocol errors, this causes random occurence
+    // of the following bug when a bad buffer is sent:
+    //   https://github.com/websockets/ws/issues/366
+    //channel._websocket._socket.end(new Buffer([0, 0, 0, 0]));
+    channel._websocket.close();
   } else {
-    debug('skip simulated error, ws is missing');
+    debug('skip simulated protocol error, ws is missing');
   }
 }
