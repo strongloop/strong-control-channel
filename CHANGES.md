@@ -1,3 +1,79 @@
+2015-07-21, Version 2.0.0
+=========================
+
+ * ws: timeout on channel loss, to allow destroy (Sam Roberts)
+
+ * ws: allow request with no callback (Sam Roberts)
+
+ * ws: fix bug revealed by ws-seq-flush test (Sam Roberts)
+
+ * test: note the ws bug triggered by ws-server-flush (Sam Roberts)
+
+ * ws: reconnect fast on initial disconnect (Sam Roberts)
+
+ * test: ws reconnect test server and client (Sam Roberts)
+
+ * test: close ws instead of injecting protocol error (Sam Roberts)
+
+ * ws: use upper-case tokens in debug msgs (Sam Roberts)
+
+ * ws: improved debug output (Sam Roberts)
+
+ * ws: server must flush messages on reconnect (Sam Roberts)
+
+ * lint (Sam Roberts)
+
+ * ws: implement disconnect handling (Sam Roberts)
+
+ * ws: channel tokens only for session reconnect (Bert Belder)
+
+ * channel: print longer debug message snippets (Sam Roberts)
+
+ * Router path is mandatory (Sam Roberts)
+
+ * Upgrade tap to v1.3.0 (Bert Belder)
+
+ * ws: disable perMessageDeflate (Ryan Graham)
+
+ * test: add tests for violent WS disconnects (Ryan Graham)
+
+ * ws: fix sending of ack-only messages (Ryan Graham)
+
+ * ws: add debug message for close() error details (Ryan Graham)
+
+ * ws: only unschedule sending ack after sending (Ryan Graham)
+
+ * ws: always close on detach (Ryan Graham)
+
+ * ws: emit connect and connection from channel (Ryan Graham)
+
+ * test: improve readability of failure message (Ryan Graham)
+
+ * ws: add debug statements so state is debuggable (Sam Roberts)
+
+ * test: make non-tap test output more TAP compliant (Ryan Graham)
+
+ * test: add graceful reconnect test (Bert Belder)
+
+ * ws: re-send queued messages on reconnect (Bert Belder)
+
+ * ws: acknowledge all packets (Bert Belder)
+
+ * ws: s/seqno/requestId/ (Bert Belder)
+
+ * ws: work around connect/close race (Bert Belder)
+
+ * Expose ws-router's path for generating URLs (Ryan Graham)
+
+ * replace express-ws with internal router (Ryan Graham)
+
+ * deps: upgrade to tap@1 (Ryan Graham)
+
+ * test: make test-server(-unref) work on Windows (Bert Belder)
+
+ * ws: remove incorrect send queue flush from _attach() (Bert Belder)
+
+
 2015-06-03, Version 1.3.0
 =========================
 
