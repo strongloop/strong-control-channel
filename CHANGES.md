@@ -1,3 +1,13 @@
+2015-07-24, Version 2.1.0
+=========================
+
+ * ws: note that server's error events are odd (Sam Roberts)
+
+ * ws: allow channel timeout to be customized (Sam Roberts)
+
+ * ws: allow channel.close() to take a reason (Sam Roberts)
+
+
 2015-07-21, Version 2.0.0
 =========================
 
