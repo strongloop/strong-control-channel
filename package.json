@@ -2,10 +2,7 @@
   "name": "strong-control-channel",
   "version": "2.1.0",
   "description": "run-time control channel for node applications",
-  "license": {
-    "name": "Dual Artistic/StrongLoop",
-    "url": "https://github.com/strongloop/strong-control-channel/blob/master/LICENSE"
-  },
+  "license": "Artistic-2.0",
   "keywords": [],
   "main": "index.js",
   "scripts": {
