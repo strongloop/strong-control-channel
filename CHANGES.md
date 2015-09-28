@@ -1,3 +1,13 @@
+2015-09-28, Version 2.1.1
+=========================
+
+ * Use strongloop conventions for licensing (Sam Roberts)
+
+ * ws: unref the reconnect timeout timer (Sam Roberts)
+
+ * deps: update ws to 0.8.x (Ryan Graham)
+
+
 2015-07-24, Version 2.1.0
 =========================
 
