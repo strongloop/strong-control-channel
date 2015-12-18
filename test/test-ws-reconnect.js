@@ -46,64 +46,6 @@ if (isParent) {
     sendServerRequest();
   });
 
-  function onListening(uri) {
-    debug('mesh uri: %s', uri);
-    var env = extend({MESH_URI: uri}, process.env);
-    require('child_process').fork(process.argv[1], ['child'], {
-      stdio: 'inherit',
-      env: env
-    }).on('exit', function(code, signal) {
-      debug('child exit: %s', signal || code);
-      assert.equal(code, 0);
-    });
-  }
-
-  function onClientRequest(message, callback) {
-    assert(message.cmd === 'clientRequest');
-    assert(message.counter === clientRequestCounter++);
-
-    debug('clientRequest %d', clientRequestCounter);
-
-    var response = {
-      cmd: 'serverResponse',
-      counter: message.counter
-    };
-    callback(response);
-
-    if (++serverResponseCounter === NUM_REQUESTS)
-      maybeCloseServer();
-  }
-
-  function sendServerRequest() {
-    var request = {
-      cmd: 'serverRequest',
-      counter: serverRequestCounter++
-    };
-    channel.request(request, onClientResponse);
-
-    if (serverRequestCounter < NUM_REQUESTS) {
-      if (serverRequestCounter && ((serverRequestCounter % SERVER_ABORT) === 0))
-        disconnectWs(channel);
-      setTimeout(sendServerRequest, REQ_INTERVAL);
-    }
-  }
-
-  function onClientResponse(message) {
-    assert(message.cmd === 'clientResponse');
-    assert(message.counter === clientResponseCounter++);
-
-    debug('clientResponse %d', clientResponseCounter);
-
-    if (clientResponseCounter === NUM_REQUESTS)
-      maybeCloseServer();
-  }
-
-  function maybeCloseServer() {
-    if (clientResponseCounter === NUM_REQUESTS &&
-        serverResponseCounter === NUM_REQUESTS)
-      server.stop();
-  }
-
   // TODO(sam) figure out what this is for, errors aren't emitted anymore,
   // and I'm not sure what is being asserted.
   //   channel.on('error', onError);
@@ -124,60 +66,6 @@ if (isParent) {
     assert.equal(err.message, 'disconnect');
   });
 
-  function onServerRequest(message, callback) {
-    assert(message.cmd === 'serverRequest');
-    assert(message.counter === serverRequestCounter++);
-
-    debug('serverRequest %d', serverRequestCounter);
-
-    var response = {
-      cmd: 'clientResponse',
-      counter: message.counter
-    };
-    callback(response);
-
-    if (++clientResponseCounter === NUM_REQUESTS)
-      maybeCloseClient();
-  }
-
-  function sendClientRequest() {
-    if (clientRequestCounter && ((clientRequestCounter % CLIENT_ABORT) === 0))
-      disconnectWs(channel);
-
-    var request = {
-      cmd: 'clientRequest',
-      counter: clientRequestCounter++
-    };
-    channel.request(request, onServerResponse);
-
-    if (clientRequestCounter < NUM_REQUESTS)
-      setTimeout(sendClientRequest, REQ_INTERVAL);
-  }
-
-  function onServerResponse(message) {
-    assert(message.cmd === 'serverResponse');
-    assert(message.counter === serverResponseCounter++);
-
-    debug('serverResponse %d', serverResponseCounter);
-
-    if (serverResponseCounter === NUM_REQUESTS)
-      maybeCloseClient();
-  }
-
-  function maybeCloseClient() {
-    debug('maybe close: want %d client? %d server? %d',
-          NUM_REQUESTS, clientResponseCounter, serverResponseCounter);
-    if (clientResponseCounter === NUM_REQUESTS &&
-        serverResponseCounter === NUM_REQUESTS) {
-      channel.close(function() {
-        debug('channel closed');
-        setTimeout(function() {
-          assert(false, 'child should exit on channel close');
-        }, 1000).unref();
-      });
-    }
-  }
-
   sendClientRequest();
 }
 
@@ -187,9 +75,121 @@ function disconnectWs() {
     // XXX(sam) ws isn't robust to protocol errors, this causes random occurence
     // of the following bug when a bad buffer is sent:
     //   https://github.com/websockets/ws/issues/366
-    //channel._websocket._socket.end(new Buffer([0, 0, 0, 0]));
+    // channel._websocket._socket.end(new Buffer([0, 0, 0, 0]));
     channel._websocket.close();
   } else {
     debug('skip simulated protocol error, ws is missing');
+  }
+}
+
+function onListening(uri) {
+  debug('mesh uri: %s', uri);
+  var env = extend({MESH_URI: uri}, process.env);
+  require('child_process').fork(process.argv[1], ['child'], {
+    stdio: 'inherit',
+    env: env,
+  }).on('exit', function(code, signal) {
+    debug('child exit: %s', signal || code);
+    assert.equal(code, 0);
+  });
+}
+
+function onClientRequest(message, callback) {
+  assert(message.cmd === 'clientRequest');
+  assert(message.counter === clientRequestCounter++);
+
+  debug('clientRequest %d', clientRequestCounter);
+
+  var response = {
+    cmd: 'serverResponse',
+    counter: message.counter,
+  };
+  callback(response);
+
+  if (++serverResponseCounter === NUM_REQUESTS)
+    maybeCloseServer();
+}
+
+function sendServerRequest() {
+  var request = {
+    cmd: 'serverRequest',
+    counter: serverRequestCounter++,
+  };
+  channel.request(request, onClientResponse);
+
+  if (serverRequestCounter < NUM_REQUESTS) {
+    if (serverRequestCounter && ((serverRequestCounter % SERVER_ABORT) === 0))
+      disconnectWs(channel);
+    setTimeout(sendServerRequest, REQ_INTERVAL);
+  }
+}
+
+function onClientResponse(message) {
+  assert(message.cmd === 'clientResponse');
+  assert(message.counter === clientResponseCounter++);
+
+  debug('clientResponse %d', clientResponseCounter);
+
+  if (clientResponseCounter === NUM_REQUESTS)
+    maybeCloseServer();
+}
+
+function maybeCloseServer() {
+  if (clientResponseCounter === NUM_REQUESTS &&
+      serverResponseCounter === NUM_REQUESTS)
+    server.stop();
+}
+
+function onServerRequest(message, callback) {
+  assert(message.cmd === 'serverRequest');
+  assert(message.counter === serverRequestCounter++);
+
+  debug('serverRequest %d', serverRequestCounter);
+
+  var response = {
+    cmd: 'clientResponse',
+    counter: message.counter,
+  };
+  callback(response);
+
+  if (++clientResponseCounter === NUM_REQUESTS)
+    maybeCloseClient();
+}
+
+function sendClientRequest() {
+  if (clientRequestCounter && ((clientRequestCounter % CLIENT_ABORT) === 0))
+    disconnectWs(channel);
+
+  var request = {
+    cmd: 'clientRequest',
+    counter: clientRequestCounter++,
+  };
+  channel.request(request, onServerResponse);
+
+  if (clientRequestCounter < NUM_REQUESTS)
+    setTimeout(sendClientRequest, REQ_INTERVAL);
+}
+
+function onServerResponse(message) {
+  assert(message.cmd === 'serverResponse');
+  assert(message.counter === serverResponseCounter++);
+
+  debug('serverResponse %d', serverResponseCounter);
+
+  if (serverResponseCounter === NUM_REQUESTS)
+    maybeCloseClient();
+}
+
+function maybeCloseClient() {
+  debug('maybe close: want %d client? %d server? %d',
+        NUM_REQUESTS, clientResponseCounter, serverResponseCounter);
+  if (clientResponseCounter === NUM_REQUESTS &&
+      serverResponseCounter === NUM_REQUESTS) {
+    channel.close(function() {
+      debug('channel closed');
+      setTimeout(function() {
+        assert(false, 'child should exit on channel close');
+      }, 1000).unref();
+    });
   }
 }

@@ -30,31 +30,6 @@ if (isParent) {
 
   var server = new Server('channel', onServerRequest, onListening);
 
-  function onServerRequest(message, callback) {
-    debug('server got', message);
-    if (message.cmd === 'serverRequest') {
-      assert(message.cmd === 'serverRequest');
-      gotRequest++;
-      callback({cmd: 'serverResponse'});
-      return;
-    }
-
-    assert(message.cmd === 'serverNotification');
-    gotNotification++;
-  }
-
-  function onListening(uri) {
-    debug('listening on mesh uri: %s', uri);
-    var env = extend({MESH_URI: uri}, process.env);
-    require('child_process').fork(process.argv[1], ['child'], {
-      stdio: 'inherit',
-      env: env
-    }).on('exit', function(code, signal) {
-      debug('child exit: %s', signal || code);
-      assert.equal(code, 0);
-    });
-  }
-
   server.client.on('new-channel', function(ch) {
     debug('new-channel: %s', ch.getToken());
     server.request({cmd: 'clientRequest'}, function(message) {
@@ -79,20 +54,6 @@ if (isParent) {
     assert.equal(err.message, 'disconnect');
   });
 
-  function onClientRequest(message, callback) {
-    debug('client got', message);
-
-    if (message.cmd === 'clientRequest') {
-      assert(message.cmd === 'clientRequest');
-      gotRequest++;
-      callback({cmd: 'clientResponse'});
-      return;
-    }
-
-    assert(message.cmd === 'clientNotification');
-    gotNotification++;
-  }
-
   channel.notify({cmd: 'serverNotification'});
 
   channel.request({cmd: 'serverRequest'}, function(message) {
@@ -102,4 +63,43 @@ if (isParent) {
   });
 
   channel.unref();
+}
+
+function onServerRequest(message, callback) {
+  debug('server got', message);
+  if (message.cmd === 'serverRequest') {
+    assert(message.cmd === 'serverRequest');
+    gotRequest++;
+    callback({cmd: 'serverResponse'});
+    return;
+  }
+
+  assert(message.cmd === 'serverNotification');
+  gotNotification++;
+}
+
+function onListening(uri) {
+  debug('listening on mesh uri: %s', uri);
+  var env = extend({MESH_URI: uri}, process.env);
+  require('child_process').fork(process.argv[1], ['child'], {
+    stdio: 'inherit',
+    env: env,
+  }).on('exit', function(code, signal) {
+    debug('child exit: %s', signal || code);
+    assert.equal(code, 0);
+  });
+}
+
+function onClientRequest(message, callback) {
+  debug('client got', message);
+
+  if (message.cmd === 'clientRequest') {
+    assert(message.cmd === 'clientRequest');
+    gotRequest++;
+    callback({cmd: 'clientResponse'});
+    return;
+  }
+
+  assert(message.cmd === 'clientNotification');
+  gotNotification++;
 }
