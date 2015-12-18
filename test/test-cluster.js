@@ -14,8 +14,8 @@ var leo = cluster.fork();
 var master = { // fake Worker for master, to compare against in test()
   id: 0,
   process: {
-    pid: process.pid
-  }
+    pid: process.pid,
+  },
 };
 
 var ECHO = {cmd: 'echo'};
