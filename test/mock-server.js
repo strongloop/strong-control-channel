@@ -4,6 +4,7 @@ var WebsocketRouter = require('../ws-router');
 var assert = require('assert');
 var debug = require('../lib/debug')('test:central');
 var express = require('express');
+var fs = require('fs');
 var url = require('url');
 
 
@@ -11,12 +12,24 @@ module.exports = Central;
 
 // onRequest, requests and notifications
 // onListening, called when server is listening, argument is server url
-function Central(path, onRequest, onListening) {
+function Central(path, onRequest, onListening, options) {
   var self = this;
+  options = options || {};
 
   self.app = express();
-  self.server = self.app.listen(0);
   self.path = path;
+  if (self.path[0] !== '/') self.path = '/' + self.path;
+
+  if (options.proto === 'wss') {
+    self.server = require('https').createServer({
+      key: fs.readFileSync(require.resolve('./fixtures/server-key.pem')),
+      cert: fs.readFileSync(require.resolve('./fixtures/server-cert.pem')),
+    }, self.app);
+    self.server.listen(0);
+  } else {
+    options.proto = 'http';
+    self.server = self.app.listen(0);
+  }
 
   self.router = new WebsocketRouter(self.server, self.app, path);
   self.client = self.router.acceptClient(_onRequest, 'CID');
@@ -29,12 +42,13 @@ function Central(path, onRequest, onListening) {
 
   self.server.on('listening', function() {
     var uri = this.uri = url.format({
-      protocol: 'http',
+      protocol: options.proto,
       auth: self.client.getToken(),
-      hostname: '127.0.0.1',
+      hostname: options.hostname || '127.0.0.1',
       port: this.address().port,
       pathname: self.path,
     });
+
     debug('listening on %s', uri, self.client.getToken());
     assert(url.parse(uri).auth);
     onListening(uri);
