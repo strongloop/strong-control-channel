@@ -1,3 +1,19 @@
+2016-02-18, Version 2.2.0
+=========================
+
+ * Don't unref TLS sockets on v0.10 (2) (Miroslav Bajtoš)
+
+ * Don't unref TLS sockets on v0.10 (Miroslav Bajtoš)
+
+ * Accept unauthorized certs for wss://localhost (Miroslav Bajtoš)
+
+ * lint: update to eslint@1 and strongloop config (Ryan Graham)
+
+ * move async to regular dependency (Ryan Graham)
+
+ * Refer to licenses with a link (Sam Roberts)
+
+
 2015-09-28, Version 2.1.1
 =========================
 
