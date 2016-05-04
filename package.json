@@ -17,6 +17,9 @@
     "name": "Sam Roberts",
     "email": "sam@strongloop.com"
   },
+  "publishConfig": {
+    "export-tests": true
+  },
   "dependencies": {
     "async": "^0.9.0",
     "debug": "^2.0.0",
