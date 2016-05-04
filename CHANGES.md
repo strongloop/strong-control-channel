@@ -1,3 +1,9 @@
+2016-05-04, Version 2.2.1
+=========================
+
+ * package: include mock server from tests (Sam Roberts)
+
+
 2016-02-18, Version 2.2.0
 =========================
 
