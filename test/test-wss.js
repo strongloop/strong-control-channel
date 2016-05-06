@@ -1,3 +1,8 @@
+// Copyright IBM Corp. 2016. All Rights Reserved.
+// Node module: strong-control-channel
+// This file is licensed under the Artistic License 2.0.
+// License text available at https://opensource.org/licenses/Artistic-2.0
+
 var Server = require('./mock-server');
 var WebsocketChannel = require('../ws-channel');
 var assert = require('assert');
