@@ -1,3 +1,11 @@
+2016-06-02, Version 2.2.3
+=========================
+
+ * package: upgrade tap to 5.x (Behnam Hajian)
+
+ * package: upgrade ws to 1.x (Behnam Hajian)
+
+
 2016-05-06, Version 2.2.2
 =========================
 
